@@ -22,7 +22,7 @@ def save_expanse(expenses):
         escritor.writeheader()
         escritor.writerows(expenses)
 
-# Parser esta pronto
+# Parser esta pronto. Os comandos, e seus argumentos/Atributos.
 parser = argparse.ArgumentParser(prog='expanse-tracker')
 subparser = parser.add_subparsers(dest='command', required=True)
 
@@ -45,7 +45,7 @@ args = parser.parse_args()
 
 def cmd_add(args):
     despesas = load_expanse()   # Chamamos a função la em cima e armazenamos em uma variavel, tenho que usar ela em todas as funções
-    ids = [e['ID'] for e in despesas] # Os IDs.
+    ids = [e['ID'] for e in despesas] 
     new_id = max(ids, default=0) + 1
     today = date.today().isoformat()
     tracker = {'ID': new_id, 'Date': today, 'Description': args.description, 'Amount': args.amount}
@@ -58,11 +58,39 @@ def cmd_list(args):
     if not despesas:
         print('Nenhuma despesa encontrada')
     else:
-        print(f"{'ID':<4}{'Date':<15}{'Description':<25}{'Amount'}")
+        print(f"{'ID':<4}{'Date':<15}{'Description':<25}{'Amount'}")            # Cabeçalho
         for e in despesas:
-            print(f"{e['ID']:<4}{e['Date']:<15}{e['Description']:<25}${e['Amount']:.2f}")
+            print(f"{e['ID']:<4}{e['Date']:<15}{e['Description']:<25}${e['Amount']:.2f}")   # Cabeçalho
+
+def cmd_delete(args):
+    despesas = load_expanse()
+    nova_despesas = [e for e in despesas if e['ID'] != args.id]
+    if len(despesas) == len(nova_despesas):
+        print('ID não encontrado')
+        return 
+    else:
+        save_expanse(nova_despesas)
+        print('Despesa excluida com sucesso!')
+
+def cmd_update(args):
+    despesas = load_expanse()
+    for e in despesas:
+        if e['ID'] == args.id:
+            if args.description is not None:
+                e['Description'] = args.description
+            if args.amount is not None:
+                e['Amount'] = args.amount
+            save_expanse(despesas)
+            print('Despesa Atualizada')
+            return
+    print('ID não encontrado')
+
 
 if args.command == 'add':
     cmd_add(args)
 elif args.command == 'list':
     cmd_list(args)
+elif args.command == 'delete':
+    cmd_delete(args)
+elif args.command == 'update':
+    cmd_update(args)
