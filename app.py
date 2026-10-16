@@ -1,6 +1,7 @@
 import argparse
 import csv
-from datetime import date
+from datetime import date, datetime
+import calendar
 
 CAMPOS = ['ID', 'Date', 'Description', 'Amount']
 def load_expanse():
@@ -39,7 +40,11 @@ delete_parser = subparser.add_parser('delete', help='Deleta um gasto')
 delete_parser.add_argument('--id',type=int, required=True)
 
 listar_parser = subparser.add_parser('list')
+
+summary_parser = subparser.add_parser('summary', help='Mostra o total das despesas')
+summary_parser.add_argument('--month', type=int, choices=range(1, 13))
 args = parser.parse_args()
+
 
 # Agora vamos para as funções.
 
@@ -85,6 +90,22 @@ def cmd_update(args):
             return
     print('ID não encontrado')
 
+def cmd_summary(args):
+    despesas = load_expanse()
+    if args.month is None:
+        total = sum(e['Amount'] for e in despesas)
+        print(f'Total das despesas: ${total:.2f}')
+        return
+    # Com --month
+    else:
+        mes = []
+        for e in despesas:
+            d = datetime.strptime(e['Date'], '%Y-%m-%d')
+            if d.month == args.month and d.year == date.today().year:
+                mes.append(e)
+        total = sum(e['Amount'] for e in mes)
+        print(f"Total das despesas de {calendar.month_name[args.month]}: ${total:.2f}")
+
 
 if args.command == 'add':
     cmd_add(args)
@@ -94,3 +115,6 @@ elif args.command == 'delete':
     cmd_delete(args)
 elif args.command == 'update':
     cmd_update(args)
+elif args.command == 'summary':
+    cmd_summary(args)
+
