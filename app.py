@@ -17,8 +17,8 @@ def load_expanse():
     except FileNotFoundError:
         return []
 
-def save_expanse(expenses):
-    with open('expenses.csv', 'w',newline='', encoding='utf-8') as f:
+def save_expanse(expenses, arquivo='expenses.csv'):
+    with open(arquivo, 'w',newline='', encoding='utf-8') as f:
         escritor = csv.DictWriter(f, fieldnames=CAMPOS)
         escritor.writeheader()
         escritor.writerows(expenses)
@@ -46,6 +46,10 @@ listar_parser.add_argument('--category')   #Adicionado a opção --category, par
 
 summary_parser = subparser.add_parser('summary', help='Mostra o total das despesas')
 summary_parser.add_argument('--month', type=int, choices=range(1, 13))
+
+# Exportação
+export_parser = subparser.add_parser('export', help='Exporta as despesas para CSV')
+export_parser.add_argument('--file', default='export.csv')
 args = parser.parse_args()
 
 
@@ -114,7 +118,11 @@ def cmd_summary(args):
                 mes.append(e)
         total = sum(e['Amount'] for e in mes)
         print(f"Total das despesas de {calendar.month_name[args.month]}: ${total:.2f}")
-
+# Para a exportação
+def cmd_export(args):
+    despesas = load_expanse()
+    save_expanse(despesas, arquivo=args.file)
+    print(f'Despesas exportadas com sucesso para {args.file}')
 
 if args.command == 'add':
     cmd_add(args)
@@ -126,4 +134,7 @@ elif args.command == 'update':
     cmd_update(args)
 elif args.command == 'summary':
     cmd_summary(args)
+elif args.command == 'export':
+    cmd_export(args)
+
 
