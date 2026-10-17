@@ -1,5 +1,4 @@
-ID,Date,Description,Amount
-2,2026-10-15,Jantar,40.0
-3,2026-10-15,Concerto do carro,500.0
-4,2026-10-15,Creche das criancas,250.0
-5,2026-10-16,Testando,50.0
+ID,Date,Description,Amount,Category
+1,2026-10-17,Pizza,80.0,Comida
+2,2026-10-17,Gasolina,400.0,Transporte
+3,2026-10-17,Teste,5.0,Geral

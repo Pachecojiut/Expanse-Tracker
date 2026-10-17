@@ -3,7 +3,7 @@ import csv
 from datetime import date, datetime
 import calendar
 
-CAMPOS = ['ID', 'Date', 'Description', 'Amount']
+CAMPOS = ['ID', 'Date', 'Description', 'Amount', 'Category']
 def load_expanse():
     try:
         with open('expenses.csv', 'r', newline='', encoding='utf-8') as f:
@@ -30,6 +30,7 @@ subparser = parser.add_subparsers(dest='command', required=True)
 add_parser = subparser.add_parser('add', help='Adiciona um gasto')
 add_parser.add_argument('--description', required=True)
 add_parser.add_argument('--amount',  type=float, required=True)
+add_parser.add_argument('--category', default='Geral')
 
 update_parser = subparser.add_parser('update', help='Atualiza um gasto')
 update_parser.add_argument('--description')
@@ -40,6 +41,8 @@ delete_parser = subparser.add_parser('delete', help='Deleta um gasto')
 delete_parser.add_argument('--id',type=int, required=True)
 
 listar_parser = subparser.add_parser('list')
+listar_parser.add_argument('--category')   #Adicionado a opção --category, para filtrar por categorias
+
 
 summary_parser = subparser.add_parser('summary', help='Mostra o total das despesas')
 summary_parser.add_argument('--month', type=int, choices=range(1, 13))
@@ -53,19 +56,25 @@ def cmd_add(args):
     ids = [e['ID'] for e in despesas] 
     new_id = max(ids, default=0) + 1
     today = date.today().isoformat()
-    tracker = {'ID': new_id, 'Date': today, 'Description': args.description, 'Amount': args.amount}
+    tracker = {'ID': new_id, 'Date': today, 'Description': args.description, 'Amount': args.amount, 'Category': args.category}
     despesas.append(tracker)
     save_expanse(despesas)
     print(f'Despesa adicionada com sucesso (ID: {new_id})')
 
 def cmd_list(args):
     despesas = load_expanse()
+    if args.category is not None:                               # A condição confere se foi digitado --category
+        filtradas = []                                          # Cria uma lista vazia onde so entrara as despesas com a categoria escolhida.
+        for e in despesas:                                      # Percorre os gastos um por um
+            if e['Category'].lower() == args.category.lower():  # A condição verifica se a categoria do gasto é igual a que a pessoa pediu.
+                filtradas.append(e)                             # Acontece somente se for True, coloca o gasto filtrado na lista vazia 'filtradas'
+        despesas = filtradas                                    # Depois despesas vira a lista filtrada
     if not despesas:
         print('Nenhuma despesa encontrada')
     else:
-        print(f"{'ID':<4}{'Date':<15}{'Description':<25}{'Amount'}")            # Cabeçalho
+        print(f"{'ID':<4}{'Date':<15}{'Description':<25}{'Category':<15}{'Amount'}")            # Cabeçalho
         for e in despesas:
-            print(f"{e['ID']:<4}{e['Date']:<15}{e['Description']:<25}${e['Amount']:.2f}")   # Cabeçalho
+            print(f"{e['ID']:<4}{e['Date']:<15}{e['Description']:<25}{e['Category']:<15}${e['Amount']}")   # Cabeçalho
 
 def cmd_delete(args):
     despesas = load_expanse()
